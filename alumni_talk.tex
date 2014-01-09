@@ -4,14 +4,14 @@
 \setlength{\parindent}{0pt}
 \usepackage{default}
 \usepackage{tabularx}
-\usepackage{url}
+\usepackage{hyperref}
 \usepackage{graphicx}
 
 \title{\huge{COSSE and beyond}}
-\author{Manuel Baumann, Slobodan Milovanovic}
+\author{Manuel Baumann, Slobodan Milovanovi\'{c}}
 \titlegraphic{
-   \includegraphics[scale=0.08]{images/TU_Delft_logo1.png}\hspace{4cm}\includegraphics[scale=0.15]{images/logo}}
-\date{\footnotesize{\today}}
+   \includegraphics[scale=0.08]{images/TU_Delft_logo1.png}\hspace{3cm}\includegraphics[scale=0.1]{images/UppU_logo.png}}
+\date{\footnotesize{February 11, 2014}}
 \begin{document}
 
 \frame{\titlepage}
@@ -45,24 +45,129 @@
 \end{frame}
 \subsection{Manuel's PhD}
 \begin{frame}
-\frametitle{COSSE - What's next?}
- bla
+\frametitle{Fast iterative solution of the time-harmonic elastic wave equation at multiple frequencies}
+\begin{columns}
+\begin{column}{0.6\textwidth}
+ The project setting:
+ \begin{itemize}
+  \item 4 years
+  \item supervisors: Kees Vuik, Martin van Gijzen
+  \item founded by \textsc{Shell}
+  \item doctoral education through TU Delft graduate school
+  \item practical application in the field of geoscience
+ \end{itemize}
+\end{column}
+\begin{column}{0.4\textwidth}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{images/snapshot1.png}
+\end{figure}
+\end{column}
+\end{columns}
+
+\end{frame}
+\begin{frame}
+\frametitle{Fast iterative solution of the time-harmonic elastic wave equation at multiple frequencies}
+\framesubtitle{The underlying mathematics}
+Wave propagation in elastic materials:
+\begin{align*}
+ -\color{blue}\omega_k^2\color{black} \rho(\mathbf{x}) \mathbf{u} - \nabla \cdot \sigma(\mathbf{u}) = \mathbf{s}, \quad \mathbf{x} \in \Omega \subset \mathbb{R}^{2,3},
+\end{align*}
+where
+\begin{itemize}
+ \item unknown displacement vector $\mathbf{u}(\mathbf{x})$
+ \pause
+ \item many frequencies $\color{blue}\omega_k\color{black}, k=1,...,n_\omega$
+ \pause
+ \item material density $\rho(\mathbf{x})$
+ \pause
+ \item stress tensor
+ \begin{align*}
+   \sigma(\mathbf{u}) \equiv \lambda(\mathbf{x}) \left( \nabla \cdot \mathbf{u} \right) + 2 \mu(\mathbf{x}) \epsilon(\mathbf{u}), \quad  \epsilon(\mathbf{u}) \equiv \frac{1}{2} \left( \nabla \mathbf{u} + \left( \nabla \mathbf{u}\right)^T \right)
+ \end{align*}
+\end{itemize}
+
 \end{frame}
 
-\section{Some others}
+\begin{frame}
+\frametitle{Fast iterative solution of the time-harmonic elastic wave equation at multiple frequencies}
+\framesubtitle{The underlying mathematics}
+FEM discretization (including BC) yields
+\begin{align*}
+(K + i \color{blue}\omega_k\color{black} C - \color{blue}\omega_k^2\color{black} M)\underline{\mathbf{u}} = \underline{\mathbf{s}},
+\end{align*}
+which can be re-arranges as,
+\begin{align*}
+\left[\begin{pmatrix} i M^{-1}C & M^{-1}K \\ I & 0\end{pmatrix} - \color{blue}\omega_k\color{black} \begin{pmatrix} I & 0 \\ 0 & I\end{pmatrix} \right] \begin{pmatrix} \color{blue}\omega_k\color{black} \underline{\mathbf{u}} \\  \underline{\mathbf{u}}\end{pmatrix} = \begin{pmatrix} M^{-1}\underline{\mathbf{s}} \\ 0\end{pmatrix}.
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{Fast iterative solution of the time-harmonic elastic wave equation at multiple frequencies}
+\framesubtitle{The underlying mathematics}
+The last equation can be written as a \color{blue}shifted linear system\color{black},
+\begin{align*}
+ (A - \color{blue}\omega_k\color{black} I)\mathbf{x}_k = \mathbf{b}, \quad k = 1,...,n_\omega,
+\end{align*}
+where $ \omega_k \in \mathbb{C}$.
+
+Krylov subspace methods are \textbf{the} solution algorithm, since:
+\begin{align*}
+\mathcal{K}_m(A,\mathbf{b}) \equiv \text{span}\{\mathbf{b}, A\mathbf{b},...,A^{m-1}\mathbf{b}\} = \mathcal{K}_m(A-\omega_k I,\mathbf{b}) 
+\end{align*}
+\end{frame}
+\begin{frame}
+\frametitle{Fast iterative solution of the time-harmonic elastic wave equation at multiple frequencies}
+\framesubtitle{The underlying mathematics}
+In \texttt{GMRES}, it holds
+\begin{align*}
+A V_m &= V_{m+1} \underbar{H}_m
+\end{align*}
+and, therefore, for the shifted systems,
+\begin{align*}
+(A - \omega_k I) V_m &= V_{m+1} (\color{blue}\underbar{H}_m - \omega_k \underbar{I}_m\color{black}).
+\end{align*}
+\pause
+\begin{itemize}
+ \item Compute $V_m$ via Arnoldi algorithm \textbf{once},
+ \item Use \color{blue}shifted Hessenberg matrix \color{black} to approximate solution of shifted systems
+\end{itemize}
+
+\end{frame}
+\begin{frame}
+\frametitle{Fast iterative solution of the time-harmonic elastic wave equation at multiple frequencies}
+\framesubtitle{The underlying mathematics}
+\begin{columns}
+\begin{column}{0.6\textwidth}
+Challenges:
+ \begin{itemize}
+  \item short-reccurence
+  \item preconditioning
+  \item memory-efficient
+ \end{itemize}
+\end{column}
+\begin{column}{0.4\textwidth}
+\begin{figure}[t]
+\centering
+%\setbeamercovered{transparent}
+\includegraphics<1>[scale=0.3]{images/dens_middleEast}
+\includegraphics<2>[scale=0.25]{images/middleEast5.png}
+\end{figure}
+\end{column}
+\end{columns}
+\end{frame}
+\subsection{Some others}
 \begin{frame}
 \frametitle{What our fellow students do now}
 \begin{description}[manymanymanypeople]
  \pause
- \item[Martin Ambrozic] 
- bla
+ \item[Martin Ambrozic] Works now at \href{http://www.abelium.eu/raziskave}{'abelium'} in Ljubljana
  \pause
- \item[Firat Haciahmetoglu] 
- bla
+ \item[Firat Haciahmetoglu] \href{http://onderwijsaanbod.kuleuven.be/opleidingen/e/SC\_50841972.htm\#bl=01,02,03,04,05\&activetab=opbouw}{Bachelor of Philosophy}, KU Leuven, Belgium 
  \pause
-  \item[Anna ???] bla
+  \item[Anna ???] text
   \pause
-  \item[Carolyn Langen] PhD student, Biomedical Imaging Group Rotterdam
+  \item[Carolyn Langen] PhD student, \href{http://www.bigr.nl/website/index.php?page=content&subpage=about}{Biomedical Imaging Group Rotterdam}
   \pause
   \item[Matthew The] text
   \pause
